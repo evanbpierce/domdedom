@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>domdedom Browser Test Suite</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #0d1117;
+      --text: #c9d1d9;
+      --border: #30363d;
+      --pass: #2ea043;
+      --fail: #f85149;
+      --card-bg: #161b22;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      max-width: 720px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    h1 {
+      margin-bottom: 0.25rem;
+    }
+
+    .summary {
+      font-size: 1.1rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    li {
+      background: var(--card-bg);
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      border-left: 4px solid var(--border);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.9rem;
+    }
+
+    li.pass {
+      border-left-color: var(--pass);
+    }
+
+    li.fail {
+      border-left-color: var(--fail);
+      color: var(--fail);
+    }
+
+    .badge {
+      display: inline-block;
+      font-weight: bold;
+      margin-right: 0.5rem;
+    }
+
+    .pass .badge { color: var(--pass); }
+    .fail .badge { color: var(--fail); }
+  </style>
+</head>
+<body>
+
+  <h1>domdedom Tests</h1>
+  <div class="summary" id="summary">Running tests...</div>
+
+  <ul id="results"></ul>
+
+  <!-- Test Fixture Elements (Hidden) -->
+  <div id="fixture" style="display: none;">
+    <h2 id="header">Header Title</h2>
+    <div id="userCard" class="card primary">User Card Content</div>
+
+    <p class="description">Paragraph 1</p>
+    <p class="description">Paragraph 2</p>
+
+    <input type="text" name="authToken" value="secret_123" />
+    <input type="text" name="authToken" value="secret_456" />
+
+    <ul id="todoList">
+      <li class="todo">Task 1</li>
+      <li class="todo active">Task 2</li>
+      <li class="todo">Task 3</li>
+    </ul>
+  </div>
+
+  <script type="module">
+    import { DOM } from '../src/index.js';
+
+    const resultsEl = document.getElementById('results');
+    const summaryEl = document.getElementById('summary');
+    let passed = 0;
+    let failed = 0;
+
+    function assert(condition, message) {
+      const item = document.createElement('li');
+      if (condition) {
+        passed++;
+        item.className = 'pass';
+        item.innerHTML = `<span class="badge">PASS</span> ${message}`;
+      } else {
+        failed++;
+        item.className = 'fail';
+        item.innerHTML = `<span class="badge">FAIL</span> ${message}`;
+      }
+      resultsEl.appendChild(item);
+    }
+
+    try {
+      // ----------------------------------------------------
+      // 1. DOM.id
+      // ----------------------------------------------------
+      const { header, userCard, nonExistent } = DOM.id;
+      assert(header instanceof HTMLElement && header.textContent === 'Header Title', 'DOM.id: Destructures element by ID');
+      assert(userCard.classList.contains('primary'), 'DOM.id: Destructured node preserves classes and attributes');
+      assert(nonExistent === null, 'DOM.id: Missing ID returns null');
+
+      // Function & property access
+      assert(DOM.id('header').id === 'header', 'DOM.id: Functional call DOM.id("header") returns element');
+      assert(DOM.id.header.id === 'header', 'DOM.id: Direct property lookup DOM.id.header returns element');
+
+      // ----------------------------------------------------
+      // 2. DOM.class
+      // ----------------------------------------------------
+      const { description, card } = DOM.class;
+      assert(description instanceof HTMLCollection && description.length === 2, 'DOM.class: Destructures HTMLCollection');
+      assert(card.length === 1 && card[0].id === 'userCard', 'DOM.class: Matches class element cleanly');
+      assert(DOM.class('description').length === 2, 'DOM.class: Functional call DOM.class("description") works');
+
+      // ----------------------------------------------------
+      // 3. DOM.tag
+      // ----------------------------------------------------
+      const { h2, p } = DOM.tag;
+      assert(h2.length === 1 && h2[0].id === 'header', 'DOM.tag: Destructures by tag name');
+      assert(p.length === 2, 'DOM.tag: Fetches all matching tags');
+      assert(DOM.tag('h2')[0].id === 'header', 'DOM.tag: Functional call works');
+
+      // ----------------------------------------------------
+      // 4. DOM.name
+      // ----------------------------------------------------
+      const { authToken } = DOM.name;
+      assert(authToken instanceof NodeList && authToken.length === 2, 'DOM.name: Destructures NodeList by name attribute');
+      assert(authToken[0].value === 'secret_123', 'DOM.name: Matches correct input value');
+      assert(DOM.name('authToken').length === 2, 'DOM.name: Functional call works');
+
+      // ----------------------------------------------------
+      // 5. DOM.qs (querySelector)
+      // ----------------------------------------------------
+      const { body } = DOM.qs;
+      assert(body === document.body, 'DOM.qs: Simple tag destructuring works');
+
+      const {
+        '.todo.active': activeTask,
+        '#userCard.primary': primaryCard
+      } = DOM.qs;
+      assert(activeTask && activeTask.textContent === 'Task 2', 'DOM.qs: Aliased CSS selector destructuring matches element');
+      assert(primaryCard && primaryCard.id === 'userCard', 'DOM.qs: Aliased complex selector works');
+      assert(DOM.qs('.todo.active').textContent === 'Task 2', 'DOM.qs: Functional call works');
+
+      // ----------------------------------------------------
+      // 6. DOM.qsa (querySelectorAll)
+      // ----------------------------------------------------
+      const {
+        '#todoList > li': tasks,
+        '.card': allCards
+      } = DOM.qsa;
+      assert(tasks instanceof NodeList && tasks.length === 3, 'DOM.qsa: Aliased destructuring returns NodeList');
+      assert(allCards.length === 1, 'DOM.qsa: Selects matched cards');
+      assert(DOM.qsa('#todoList > li').length === 3, 'DOM.qsa: Functional call works');
+
+      // ----------------------------------------------------
+      // 7. Dynamic Evaluation Verification
+      // ----------------------------------------------------
+      const dynamicEl = document.createElement('div');
+      dynamicEl.id = 'runtimeInjected';
+      document.body.appendChild(dynamicEl);
+
+      assert(DOM.id.runtimeInjected !== null, 'Re-query: Direct property lookup finds freshly added element');
+      assert(DOM.id('runtimeInjected') !== null, 'Re-query: Function call finds freshly added element');
+
+      dynamicEl.remove();
+      assert(DOM.id.runtimeInjected === null, 'Re-query: Resolves to null after element removal');
+
+    } catch (err) {
+      assert(false, `Unexpected exception: ${err.message}`); }  // Render summary summaryEl.textContent = `Completed ${passed + failed} assertions: ${passed} passed,${failed} failed.`;
+    summaryEl.style.color = failed === 0 ? 'var(--pass)' : 'var(--fail)';
+  </script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+{
+  "name": "domdedom",
+  "version": "1.0.0",
+  "description": "Clean, declarative DOM querying using JavaScript Proxies and destructuring assignment.",
+  "type": "module",
+  "main": "./src/index.js",
+  "module": "./src/index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./src/index.js",
+      "default": "./src/index.js"
+    }
+  },
+  "files": [
+    "src",
+    "index.d.ts",
+    "README.md",
+    "LICENSE",
+	"Destructuring the DOM API.md"
+  ],
+  "keywords": [
+    "dom",
+    "proxy",
+    "destructuring",
+    "queryselector",
+    "getelementbyid",
+    "ergonomics",
+    "micro-library"
+  ],
+  "author": "Evan Pierce",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/domdedom.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/domdedom/issues"
+  },
+  "homepage": "https://github.com/your-username/domdedom#readme"
+}
