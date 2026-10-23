@@ -1,6 +1,6 @@
 {
   "name": "domdedom",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Clean, declarative DOM querying using JavaScript Proxies and destructuring assignment.",
   "type": "module",
   "main": "./src/index.js",
@@ -33,10 +33,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/domdedom.git"
+    "url": "https://github.com/evanbpierce/domdedom.git"
   },
   "bugs": {
-    "url": "https://github.com/your-username/domdedom/issues"
+    "url": "https://github.com/evanbpierce/domdedom/issues"
   },
-  "homepage": "https://github.com/your-username/domdedom#readme"
+  "homepage": "https://github.com/evanbpierce/domdedom#readme"
 }
