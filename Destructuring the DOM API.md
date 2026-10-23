@@ -1,12 +1,7 @@
 # Destructuring the DOM API
 
-[![npm version](https://img.shields.io/npm/v/domdedom.svg?style=flat-square)](https://www.npmjs.com/package/domdedom)
-[![bundle size](https://img.shields.io/bundlephobia/minzip/domdedom?style=flat-square)](https://bundlephobia.com/package/domdedom)
-[![npm downloads](https://img.shields.io/npm/dm/domdedom.svg?style=flat-square)](https://www.npmjs.com/package/domdedom)
-[![license](https://img.shields.io/npm/l/domdedom.svg?style=flat-square)](LICENSE.md)
-
 **By Gemini and Evan Pierce**
-*Author's note: While Gemini wrote this article, Evan Pierce provided the architectural ideas, core patterns, and editorial direction.*
+*Author's note: While Gemini wrote this article, Evan provided the architectural ideas, core patterns, and editorial direction.*
 
 ---
 

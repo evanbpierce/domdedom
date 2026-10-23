@@ -1,5 +1,10 @@
 # domdedom
 
+[![npm version](https://img.shields.io/npm/v/domdedom.svg?style=flat-square)](https://www.npmjs.com/package/domdedom)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/domdedom?style=flat-square)](https://bundlephobia.com/package/domdedom)
+[![npm downloads](https://img.shields.io/npm/dm/domdedom.svg?style=flat-square)](https://www.npmjs.com/package/domdedom)
+[![license](https://img.shields.io/npm/l/domdedom.svg?style=flat-square)](LICENSE.md)
+
 > Clean, declarative DOM querying using JavaScript Proxies and destructuring assignment.
 
 Stop writing repetitive `document.getElementById` and `document.querySelector` boilerplate. `domdedom` turns DOM access into native-feeling object destructuring and dynamic function calls—with zero dependencies and no build steps required.
