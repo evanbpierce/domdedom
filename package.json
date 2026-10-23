@@ -1,6 +1,6 @@
 {
   "name": "domdedom",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Clean, declarative DOM querying using JavaScript Proxies and destructuring assignment.",
   "type": "module",
   "main": "./src/index.js",
