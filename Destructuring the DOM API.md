@@ -1,7 +1,7 @@
 # Destructuring the DOM API
 
 **By Gemini and Evan Pierce**
-*Author's note: While Gemini wrote this article, Evan provided the architectural ideas, core patterns, and editorial direction.*
+*Author's note: While Gemini wrote this article, Evan Pierce provided the architectural ideas, core patterns, and editorial direction.*
 
 ---
 
@@ -137,35 +137,25 @@ const byId = new Proxy(() => {}, {
 
 #### The Upgraded `DOM` Namespace
 
-Upgrading the entire namespace gives every accessor dual functionality—destructure when declaring upfront, invoke directly when querying dynamically:
+Instead of repeating these traps for every method, we can abstract the construction into a clean helper factory `p`. This provides uniform dual functionality across the entire namespace—destructure when declaring upfront, invoke directly when querying dynamically:
 
 ```javascript
-const DOM = {
-  id: new Proxy(() => {}, {
-    apply: (_, __, [id]) => document.getElementById(id),
-    get: (_, id) => document.getElementById(id)
-  }),
-  class: new Proxy(() => {}, {
-    apply: (_, __, [c]) => document.getElementsByClassName(c),
-    get: (_, c) => document.getElementsByClassName(c)
-  }),
-  tag: new Proxy(() => {}, {
-    apply: (_, __, [t]) => document.getElementsByTagName(t),
-    get: (_, t) => document.getElementsByTagName(t)
-  }),
-  name: new Proxy(() => {}, {
-    apply: (_, __, [n]) => document.getElementsByName(n),
-    get: (_, n) => document.getElementsByName(n)
-  }),
-  qs: new Proxy(() => {}, {
-    apply: (_, __, [q]) => document.querySelector(q),
-    get: (_, q) => document.querySelector(q)
-  }),
-  qsa: new Proxy(() => {}, {
-    apply: (_, __, [qa]) => document.querySelectorAll(qa),
-    get: (_, qa) => document.querySelectorAll(qa)
-  })
+const p = fn =>
+  new Proxy(() => {}, {
+    apply: (_, __, [arg]) => fn(arg),
+    get: (_, arg) => fn(arg)
+  });
+
+export const DOM = {
+  id: p(id => document.getElementById(id)),
+  class: p(c => document.getElementsByClassName(c)),
+  tag: p(t => document.getElementsByTagName(t)),
+  name: p(n => document.getElementsByName(n)),
+  qs: p(q => document.querySelector(q)),
+  qsa: p(qa => document.querySelectorAll(qa))
 };
+
+export default DOM;
 ```
 
 #### Clean Ergonomics in Action
@@ -192,9 +182,30 @@ const allButtons  = DOM.tag('button');
 
 1. **A Pragmatic Balance on DRY:**
    Admittedly, destructuring isn't 100% DRY in every scenario—when renaming complex selectors like `const { '.item.active': activeItem } = DOM.qs;`, you are still repeating the identifier concept across the colon. However, in the vast majority of everyday code where variable names match element IDs, tags, or simple classes (`const { submitBtn, userForm } = DOM.id`), the ergonomics become substantially more DRY. You ditch repetitive `document.getElementById(...)` calls and declare each binding once.
-2. **Native Error Forwarding:** Passing parameters straight into the underlying methods lets the browser handle coercion and errors naturally. If you pass an invalid selector to `DOM.qs(q)`, it throws a native `DOMException` without being masked by custom error handlers.
-3. **Evaluation Timing:** Destructuring queries the DOM at the exact moment the declaration executes. If your elements haven't mounted yet (e.g., executing before `DOMContentLoaded`), variables will bind to `null` or empty live collections.
-4. **Static References vs. Live Queries:**
+
+2. **Kebab-Case IDs vs. Identifier Syncing:**
+   HTML has historically favored kebab-case (`id="submit-btn"`), but hyphens are invalid in unquoted JavaScript variable names. When querying an ID with a dash, you are typically forced to alias it:
+   ```javascript
+   const { 'submit-btn': submitBtn } = DOM.id;
+   ```
+   While aliasing works, it breaks the seamless 1:1 identifier match. For newly authored markup, adopting JavaScript's standard **camelCase** (`id="submitBtn"`) is ideal because it matches language conventions and destructures without aliases.
+
+   **What if you're stuck with existing hyphenated IDs?**
+   If you are working with an existing codebase or template where changing the HTML isn't an option, you don't have to surrender to alias boilerplate. A slightly modified proxy handler can bridge the gap by automatically mapping underscores to dashes:
+   ```javascript
+   const byId = new Proxy({}, {
+     get: (_, id) => document.getElementById(id.replaceAll('_', '-'))
+   });
+   ```
+   Now valid JavaScript identifiers unpack legacy hyphenated elements directly:
+   ```javascript
+   // Automatically queries document.getElementById('submit-btn') and 'error-banner'
+   const { submit_btn, error_banner } = byId;
+   ```
+
+3. **Native Error Forwarding:** Passing parameters straight into the underlying methods lets the browser handle coercion and errors naturally. If you pass an invalid selector to `DOM.qs(q)`, it throws a native `DOMException` without being masked by custom error handlers.
+4. **Evaluation Timing:** Destructuring queries the DOM at the exact moment the declaration executes. If your elements haven't mounted yet (e.g., executing before `DOMContentLoaded`), variables will bind to `null` or empty live collections.
+5. **Static References vs. Live Queries:**
    - **Destructured variables** store a static reference evaluated at execution time:
      ```javascript
      const { card } = DOM.id; // Evaluated once and bound locally
